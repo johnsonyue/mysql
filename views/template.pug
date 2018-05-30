@@ -1,0 +1,33 @@
+doctype=html
+html(language=en)
+  head
+    link(href="/public/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet")
+    link(href="/public/bootstrap-3.3.7-dist/css/dashboard.css" rel="stylesheet")
+    link(href="/public/bootstrap-3.3.7-dist/css/flag-icon-css/css/flag-icon.css" rel="stylesheet")
+    each file in css
+      link(href=file rel="stylesheet")
+    
+  body
+    script(src="/public/bootstrap-3.3.7-dist/js/jquery.min.js")
+    script(src="/public/bootstrap-3.3.7-dist/js/bootstrap.min.js")
+    each file in include
+      script(src=file)
+
+    nav(class="navbar navbar-default navbar-fixed-top")
+       div(class="container-fluid")
+         div(class="navbar-header")
+           button(
+             type="button"
+             class="navbar-toggle collapsed"
+             data-toggle="collapse"
+             data-target="#navbar"
+             aria-expanded="false"
+             aria-controls="navbar"
+           )
+             span(class="sr-only") Toggle navigation
+             span(class="icon-bar")
+             span(class="icon-bar")
+             span(class="icon-bar")
+           a(class="navbar-brand" href="#") #{title}
+    div(class="col-md-12")
+      block content
