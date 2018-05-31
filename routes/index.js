@@ -4,7 +4,7 @@ var router = express.Router();
 /* GET home page. */
 router.get('/',function(req, res, next){
   res.render('index',{
-    title: 'MySQL Inspector',
+    title: 'Topology Inspector',
     include: ['/public/javascripts/index.js','/bower/jsgrid/dist/jsgrid.min.js'],
     css: ['/bower/jsgrid/dist/jsgrid.min.css','/bower/jsgrid/dist/jsgrid-theme.min.css']
   });

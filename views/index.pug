@@ -4,3 +4,12 @@ block content
   div(class="col-md-12")
     h2(class="sub-header") Edge List
     div(class="col-md-12" id="table_div")
+    div(class="col-md-12")
+      div(class="col-md-10" id="pager_div")
+      div(class="col-md-2 form-inline" style="margin-top: 8; text-align: right")
+        label page size: &nbsp;&nbsp
+        select(id="size_select" value=20)
+          option(value=20) 20
+          option(value=40) 40
+          option(value=60) 60
+          option(value=100) 100

@@ -5,7 +5,7 @@ drop table edge_table;
 create table if not exists edge_table(
   in_ip varchar(16),
   out_ip varchar(16),
-  is_dest boolean,
+  is_dest char(1),
   star integer,
   delay float,
   frequency integer,
@@ -24,5 +24,7 @@ fields terminated by ' ';
 
 create index in_ip_index on edge_table(in_ip);
 create index out_ip_index on edge_table(out_ip);
+create index is_dest_index on edge_table(is_dest);
 create index in_country_index on edge_table(in_country);
 create index out_country_index on edge_table(out_country);
+create index monitor_index on edge_table(monitor);

@@ -14,7 +14,9 @@ function get_connection(){
 function query_all(con, query, res){
   console.log(query);
   function wrap(k){
+    var fuzzy_list = ['in_ip', 'out_ip', 'monitor'];
     var v = query[k];
+    if (fuzzy_list.includes(k)) return typeof v == 'string' ? k+" like '"+v+"%'" : k+" like "+v;
     return typeof v == 'string' ? k+"='"+v+"'" : k+"="+v;
   }
   var sql = 'SELECT * FROM edge_table ';
