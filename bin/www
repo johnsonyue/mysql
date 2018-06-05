@@ -7,6 +7,14 @@
 var app = require('../app');
 var debug = require('debug')('mysql:server');
 var http = require('http');
+var neo4j = require('neo4j-driver').v1;
+var RadixTrie = require('radix-trie');
+var fs = require('fs');
+
+/**
+* Custom Module
+*/
+var patricia = require('../src/patricia');
 
 /**
  * Get port from environment and store in Express.
@@ -22,12 +30,54 @@ app.set('port', port);
 var server = http.createServer(app);
 
 /**
+* Stateful Variables.
+*/
+driver = neo4j.driver("bolt://10.10.222.135:7689", neo4j.auth.basic("neo4j","1q2w3e4r"));
+trie = new RadixTrie();
+
+if (process.env.GEO){
+  console.log('loading data from geodb');
+  fs.readFile('import/GeoLite2-Country-Locations-en.csv', function(err, data){
+    if (err){
+      throw err;
+    }
+    var location = {};
+    data.toString().split('\n').splice(1).forEach( x => {
+      var f = x.split(',');
+      location[f[0]] = f[4];
+    });
+    fs.readFile('import/GeoLite2-Country-Blocks-IPv4.csv', function(err, d){
+      if (err){
+        throw err;
+      }
+      d.toString().split('\n').splice(1).forEach( x => {
+        var f = x.split(',');
+        var loc = location[f[1]] || '--';
+        patricia.addString(trie, f[0], loc);
+      });
+      console.log('ready!');
+    });
+  });
+}
+
+/**
  * Listen on provided port, on all network interfaces.
  */
 
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+/**
+* Close Neo4j Driver as Indicated in its Document.
+*/
+process.on('SIGTERM', closeDriver);
+process.on('SIGINT', closeDriver);
+
+function closeDriver(){
+  driver.close();
+  process.exit(0);
+}
 
 /**
  * Normalize a port into a number, string, or false.

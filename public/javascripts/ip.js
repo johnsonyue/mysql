@@ -13,7 +13,7 @@ $(function() {
      if (this.autosearch){
        this.input.on("keypress", function(e){
          if (e.which === 13){
-           $("#table_div").jsGrid("search");
+           $("#ip_table_div").jsGrid("search");
            e.preventDefault();
          }
        });
@@ -25,38 +25,38 @@ $(function() {
    }
   });
   jsGrid.fields.countryField = CountryField;
-
-  var SelectField = function(config){
-    jsGrid.Field.call(this, config); 
-  }
-  SelectField.prototype = new jsGrid.Field({
-   itemTemplate: function(v){
-     return v;
-   },
-   filterTemplate: function() {
-     if(!this.filtering) return "";
-     this.select = $(
-       `<select value=''>
-          <option value=''>-</option>
-          <option value='Y'>Y</option>
-          <option value='N'>N</option>
-        </select>`
-     );
-     if (this.autosearch){
-       this.select.on('change', function(e){
-         $("#table_div").jsGrid("search");
-         e.preventDefault();
+  
+  var ClickableField = function(config){
+    jsGrid.Field.call(this, config);
+  };
+  ClickableField.prototype = new jsGrid.Field({
+   itemTemplate: function(v,items){
+     var a = $("<a></a>")
+       .text(v)
+       .on("click", function(e){
+         console.log(items.ip);
        });
-     }
-     return this.select;
-   },
-   filterValue: function(v) {
-     return this.select.val();
+     return a;
    }
   });
-  jsGrid.fields.selectField = SelectField;
+  jsGrid.fields.clickableField = ClickableField;
 
-  $("#table_div").jsGrid({
+  var StaticField = function(config){
+    jsGrid.Field.call(this, config);
+  };
+  StaticField.prototype = new jsGrid.Field({
+   itemTemplate: function(v,items){
+     var a = $("<a>view</a>")
+       .on("click", function(e){
+         console.log(items.ip);
+       });
+     return a;
+   }
+  });
+  jsGrid.fields.staticField = StaticField;
+
+  //set up table.
+  $("#ip_table_div").jsGrid({
     width: null,
     shrinkToFit: false,
 
@@ -71,13 +71,50 @@ $(function() {
     pagerFormat: "{first} {prev} {pages} {next} {last} &nbsp;&nbsp; total pages: {pageCount} &nbsp;&nbsp; total items: {itemCount} &nbsp;&nbsp;",
     controller: {
       loadData: function(filter) {
+        //filter.action='list';
         return $.ajax({
           type: "GET",
-          url: "/db",
+          url: "/graph",
           data: filter
         });
       },
     },
+    fields: [
+      { name: "#", type: "text", filtering: false, sorting: false, align: 'center' },
+      { name: "ip", type: "text", filtering: true, sorting: false, align: 'left' },
+      { name: "country", type: "countryField", filtering: false, sorting: false, align: 'center' },
+      { name: "degree", type: "clickableField", filtering: false, sorting: false, align: 'center' },
+      { name: "topology", type: "staticField", filtering: false, sorting: false, align: 'center' },
+     ]
+  });
+  
+  $("#size_select").on("change", function(){
+    $("#ip_table_div").jsGrid("option", "pageSize", $(this).val());
+  });
+  $("#page_input").on("keypress", function(e){
+    if (e.which === 13){
+      $("#ip_table_div").jsGrid("openPage", $(this).val());
+      e.preventDefault();
+    }
+  });
+
+  
+  $("#adj_table_div").jsGrid({
+    width: null,
+    shrinkToFit: false,
+
+    sorting: true,
+    filtering: true,
+    paging: true,
+    pageLoading: true,
+    autoload: true,
+    pageSize: 30,
+    pageButtonCount: 5,
+    pagerFormat: "{first} {prev} {pages} {next} {last} &nbsp;&nbsp; total pages: {pageCount} &nbsp;&nbsp; total items: {itemCount} &nbsp;&nbsp;",
+    noDataContent: 'No data',
+    
+    data: {},
+
     fields: [
       { name: "#", type: "text", filtering: false, sorting: false, align: 'left' },
       { name: "in_ip", type: "text", filtering: true, align: 'left' },
@@ -93,15 +130,5 @@ $(function() {
       { name: "first_seen", type: "number", filtering: false, align: 'right' },
       { name: "last_seen", type: "number", filtering: false, align: 'right' }
      ]
-  });
-  
-  $("#size_select").on("change", function(){
-    $("#table_div").jsGrid("option", "pageSize", $(this).val());
-  });
-  $("#page_input").on("keypress", function(e){
-    if (e.which === 13){
-      $("#table_div").jsGrid("openPage", $(this).val());
-      e.preventDefault();
-    }
   });
 });

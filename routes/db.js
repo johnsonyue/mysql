@@ -11,12 +11,11 @@ function get_connection(){
   });
 }
 
-function query_all(con, query, res){
-  console.log(query);
+function query_all(con, query, res, resolve){
   function wrap(k){
     var fuzzy_list = ['in_ip', 'out_ip', 'monitor'];
     var v = query[k];
-    if (fuzzy_list.includes(k)) return typeof v == 'string' ? k+" like '"+v+"%'" : k+" like "+v;
+    if (fuzzy_list.includes(k)) k+" like '"+v+"%'";
     return typeof v == 'string' ? k+"='"+v+"'" : k+"="+v;
   }
   var sql = 'SELECT * FROM edge_table ';
@@ -33,7 +32,8 @@ function query_all(con, query, res){
       if (where) s += 'WHERE ' + where + ' ';
       con.query(s, function(err, r, fields){
         if (err) throw err;
-        res.json({'data': result, 'itemsCount': r[0].count});
+        result.map( (x,i) => x['#'] = (query['pageIndex']-1)*query['pageSize']+i );
+        resolve({'data': result, 'itemsCount': r[0].count});
       });
     });
   });
@@ -41,7 +41,13 @@ function query_all(con, query, res){
 
 router.get('/',function(req, res, next){
   var con = get_connection();
-  query_all(con, req.query, res);
+  var promise = new Promise(function(resolve, reject){
+    query_all(con, req.query, res, resolve);
+  });
+  promise.then(function(ret){ 
+    con.end();
+    res.json(ret);
+  });
 });
 
 module.exports = router;

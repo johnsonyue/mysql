@@ -2,8 +2,8 @@ extends template
 
 block content
   div(class="col-md-12")
-    h2(class="sub-header") Edge List
-    div(class="col-md-12" id="table_div")
+    h2(class="sub-header") IP List
+    div(class="col-md-12" id="ip_table_div")
     div(class="col-md-12")
       div(class="col-md-8" id="pager_div")
       div(class="col-md-4 form-inline" style="padding-top: 8; padding-bottom: 8;")
@@ -16,3 +16,5 @@ block content
         |&nbsp;&nbsp 
         label go to page: &nbsp;&nbsp
         input(id="page_input" class="form-control" type="number" min="1")
+    h2(class="sub-header") Adjacent Edge List
+    div(class="col-md-12" id="adj_table_div")

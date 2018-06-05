@@ -7,6 +7,8 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var dbRouter = require('./routes/db');
+var ipRouter = require('./routes/ip');
+var graphRouter = require('./routes/graph');
 
 var app = express();
 
@@ -24,6 +26,8 @@ app.use('/bower', express.static(path.join(__dirname, 'bower_components')));
 
 app.use('/', indexRouter);
 app.use('/db', dbRouter);
+app.use('/ip', ipRouter);
+app.use('/graph', graphRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

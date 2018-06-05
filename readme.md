@@ -1,6 +1,7 @@
 ## prerequisites:
  - npm, bower
  - mysql
+ - neo4j
 
 ## install:
 
