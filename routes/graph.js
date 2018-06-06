@@ -15,7 +15,7 @@ function query_ip(session, query, res){
   }
 
   var cypher = 'MATCH (n:node) ';
-  var where = Object.keys(query).filter(x => !['pageIndex', 'pageSize','sortField','sortOrder'].includes(x) && query[x]).map(wrap).join(' AND ');
+  var where = Object.keys(query).filter(x => !['action', 'pageIndex', 'pageSize','sortField','sortOrder'].includes(x) && query[x]).map(wrap).join(' AND ');
   if (where) cypher += 'WHERE ' + where + ' ';
   cypher += 'WITH n '; //pipeline using 'WITH'
   if (query['sortField']) cypher += 'ORDER BY n.' + query['sortField'] + ' ' + query['sortOrder'] + ' ';
@@ -41,15 +41,53 @@ function query_ip(session, query, res){
   });
 }
 
+function query_adj(session, query, res){
+  var cypher = 'MATCH (n:node)-[e:edge]-() ';
+  if (!query['ip']) res.json({});
+  cypher += "WHERE n.ip='" + query['ip'] + "' ";
+  cypher += 'RETURN startNode(e).ip as i, endNode(e).ip as o, properties(e) as e';
+  console.log(cypher);
+
+  session.run(cypher).then(function(result){
+    var data = result.records.map(x => Object.assign(
+      {}, {'in_ip': x.get('i'), 'out_ip': x.get('o')},
+      {'in_country': patricia.matchString(trie, x.get('i'))},
+      {'out_country': patricia.matchString(trie, x.get('o'))},
+      x.get('e'),
+    ));
+    res.json(data);
+  });
+}
+
+function query_vic(session, query, res){
+  var cypher = 'MATCH (n:node)-[el:edge*1..3]-() ';
+  if (!query['ip']) res.json({});
+  cypher += "WHERE n.ip='" + query['ip'] + "' ";
+  cypher += "UNWIND el AS e ";
+  cypher += 'RETURN startNode(e).ip as i, endNode(e).ip as o, properties(e) as e ';
+  cypher += "LIMIT 1000";
+  console.log(cypher);
+
+  session.run(cypher).then(function(result){
+    var data = result.records.map(x => Object.assign(
+      {}, {'in_ip': x.get('i'), 'out_ip': x.get('o')},
+      {'in_country': patricia.matchString(trie, x.get('i'))},
+      {'out_country': patricia.matchString(trie, x.get('o'))},
+      x.get('e'),
+    ));
+    res.json(data);
+  });
+}
+
 router.get('/',function(req, res, next){
   var session = get_connection();
-  query_ip(session, req.query, res);
+  //query_ip(session, req.query, res);
   if (req.query.action == 'ip'){
     query_ip(session, req.query, res);
   }else if (req.query.action == 'adj'){
-
+    query_adj(session, req.query, res);
   }else if (req.query.action == 'vic'){
-
+    query_vic(session, req.query, res);
   }
 });
 

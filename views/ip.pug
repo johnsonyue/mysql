@@ -16,5 +16,23 @@ block content
         |&nbsp;&nbsp 
         label go to page: &nbsp;&nbsp
         input(id="page_input" class="form-control" type="number" min="1")
-    h2(class="sub-header") Adjacent Edge List
-    div(class="col-md-12" id="adj_table_div")
+
+  hr(class="col-xs-12")
+  ul(class="nav nav-tabs" role="tablist")
+    li(class="active" role="presentation")
+      a(href="#adj-list-tab" role="tab" data-toggle="tab") Adjacency List
+    li(role="presentation")
+      a(href="#topo-list-tab" role="tab" data-toggle="tab") Topology List
+    li(role="presentation")
+      a(href="#topo-vis-tab" role="tab" data-toggle="tab") Topology Visualization
+
+  div(class="tab-content")
+    div(id="adj-list-tab" role="tabpanel" class="tab-pane fade in active")
+      h2(class="sub-header") Adjacency List
+      div(class="col-md-12" id="adj_table_div")
+    div(id="topo-list-tab" role="tabpanel" class="tab-pane fade in")
+      h2(class="sub-header") Topology List
+      div(class="col-md-12" id="topo_table_div")
+    div(id="topo-vis-tab" role="tabpanel" class="tab-pane fade in")
+      h2(class="sub-header") Topology Visualization
+      div(class="col-md-12" id="topo_vis_div")
