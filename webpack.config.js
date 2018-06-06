@@ -9,7 +9,6 @@ module.exports = {
   },
   externals: {
     jquery: 'jQuery',
-    jsgrid: 'jsGrid'
   },
   mode: 'development'
 };

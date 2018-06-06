@@ -79,6 +79,8 @@ $(function() {
            result.forEach( (x,i) => x['#']=i );
            adjTableData = result;
            $(container).jsGrid("option","data",adjTableData);
+
+           $('#nav-tab a[href=#adj-list-tab]').tab('show');
          });
        });
      return a;
@@ -106,6 +108,11 @@ $(function() {
            result.forEach( (x,i) => x['#']=i );
            topoTableData = result;
            $(container).jsGrid("option","data",topoTableData);
+
+           $('#nav-tab a[href=#topo-list-tab]').tab('show');
+           
+           graph_data = format(topoTableData);
+           graph = new mylib.myD3Graph($('#topo_vis_div'), graph_data, {});
          });
        });
      return a;
@@ -156,7 +163,7 @@ $(function() {
     }
   });
 
-  var adjTableData = {};
+  var adjTableData = [];
   $("#adj_table_div").jsGrid({
     width: null,
     shrinkToFit: false,
@@ -204,7 +211,7 @@ $(function() {
      ]
   });
 
-  var topoTableData = {};
+  var topoTableData = [];
   $("#topo_table_div").jsGrid({
     width: null,
     shrinkToFit: false,
@@ -248,5 +255,29 @@ $(function() {
       { name: "ttl", type: "number", filtering: false, align: 'right' },
       { name: "monitor", type: "text", filtering: true, align: 'left' },
      ]
+  });
+  
+  //setup topology graph.
+  function format(input){
+    var uniq = {};
+    var id = x => (x in uniq) ? uniq[x] : (uniq[x]=Object.keys(uniq).length);
+
+    var links = [];
+    input.forEach((x,i) => {
+      var in_id = id(x.in_ip);
+      var out_id = id(x.out_ip);
+      links.push({"source": in_id, "target": out_id, "id": i});
+    });
+    var nodes = Object.keys(uniq).map( x => ({"id": uniq[x], "label": x}) );
+
+    return {"nodes": nodes, "links": links};
+  }
+
+  var graph_data = format(topoTableData);
+  var graph = new mylib.myD3Graph($('#topo_vis_div'), graph_data, {});
+
+  //resize svg after tab is shown.
+  $('#nav-tab a[href=#topo-vis-tab]').on('shown.bs.tab', function(e){
+    graph.resized();
   });
 });

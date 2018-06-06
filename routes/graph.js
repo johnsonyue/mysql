@@ -64,8 +64,9 @@ function query_vic(session, query, res){
   if (!query['ip']) res.json({});
   cypher += "WHERE n.ip='" + query['ip'] + "' ";
   cypher += "UNWIND el AS e ";
+  cypher += 'WITH distinct e ';
   cypher += 'RETURN startNode(e).ip as i, endNode(e).ip as o, properties(e) as e ';
-  cypher += "LIMIT 1000";
+  cypher += "LIMIT 3000";
   console.log(cypher);
 
   session.run(cypher).then(function(result){
@@ -81,7 +82,6 @@ function query_vic(session, query, res){
 
 router.get('/',function(req, res, next){
   var session = get_connection();
-  //query_ip(session, req.query, res);
   if (req.query.action == 'ip'){
     query_ip(session, req.query, res);
   }else if (req.query.action == 'adj'){

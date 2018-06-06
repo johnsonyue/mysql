@@ -15,7 +15,7 @@ function query_all(con, query, res, resolve){
   function wrap(k){
     var fuzzy_list = ['in_ip', 'out_ip', 'monitor'];
     var v = query[k];
-    if (fuzzy_list.includes(k)) k+" like '"+v+"%'";
+    if (fuzzy_list.includes(k)) return k+" like '"+v+"%'";
     return typeof v == 'string' ? k+"='"+v+"'" : k+"="+v;
   }
   var sql = 'SELECT * FROM edge_table ';
