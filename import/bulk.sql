@@ -1,7 +1,7 @@
 create database if not exists edges;
 use edges;
 
-drop table edge_table;
+drop table if exists edge_table;
 create table if not exists edge_table(
   in_ip varchar(16),
   out_ip varchar(16),

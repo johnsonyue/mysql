@@ -13,11 +13,19 @@
 	dbms.connectors.default_listen_address=<$iip>
 	dbms.memory.heap.initial_size=<$heap_size> #at least 4g
 	dbms.memory.heap.max_size=<$heap_size> #at least 4g
+
+## apoc:
+
+	root# cd /var/lib/neo4j/plugins && wget http://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/3.4.0.1
+	#add the following line to neo4j.conf
+	dbms.security.procedures.unrestricted=apoc.*
+
 ## setup:
 
 	root# su neo4j
 	neo4j$ neo4j-admin set-initial-password ****
 	neo4j$ neo4j start
+	
 
 ## cypher shell:
 
@@ -25,8 +33,8 @@
 
 ## import:
 
-	root# ./import-links.sh <$links> <$database>
-        root# cypher-shell -c -a $ip -u neo4j -p **** < create-index.cql
+	neo4j# ./import-links.sh <$links> <$database>
+        neo4j# cypher-shell -c -a $ip -u neo4j -p **** < create-index.cql
 
 ## troubleshooting:
  - permissions related:
