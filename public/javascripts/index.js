@@ -71,6 +71,7 @@ $(function() {
     pagerFormat: "{first} {prev} {pages} {next} {last} &nbsp;&nbsp; total pages: {pageCount} &nbsp;&nbsp; total items: {itemCount} &nbsp;&nbsp;",
     controller: {
       loadData: function(filter) {
+        filter.action = "all";
         return $.ajax({
           type: "GET",
           url: "/db",

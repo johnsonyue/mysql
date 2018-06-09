@@ -18,7 +18,7 @@ create table if not exists edge_table(
   primary key (in_ip, out_ip)
 ) engine MyISAM;
 
-load data local infile 'data.tsv'
+load data local infile 'links.dsv'
 into table edge_table
 fields terminated by ' ';
 
@@ -28,3 +28,17 @@ create index is_dest_index on edge_table(is_dest);
 create index in_country_index on edge_table(in_country);
 create index out_country_index on edge_table(out_country);
 create index monitor_index on edge_table(monitor);
+
+drop table if exists node_table;
+create table if not exists node_table(
+  ip varchar(16),
+  ip_int integer,
+  primary key (ip)
+) engine MyISAM;
+
+load data local infile 'nodes.dsv'
+into table node_table
+fields terminated by ' ';
+
+create index ip_index on node_table(ip);
+create index ip_int_index on node_table(ip_int);

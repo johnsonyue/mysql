@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mysql = require('mysql');
+var ip = require('ip');
 
 function get_connection(){
   return mysql.createConnection({
@@ -39,10 +40,31 @@ function query_all(con, query, res, resolve){
   });
 }
 
+function query_closest_ip(con, query, res, resolve){
+  if (!query.ip || ip.isV4Format(query.ip)) resolve;
+
+  var integer = ip.toLong(query.ip);
+  var a = '(SELECT * FROM node_table WHERE ip_int >= ' + integer + ' ORDER BY ip_int ASC LIMIT 1) ';
+  var b = '(SELECT * FROM node_table WHERE ip_int <= ' + integer + ' ORDER BY ip_int DESC LIMIT 1)';
+  var sql = a + 'UNION ' + b;
+  console.log(sql);
+  con.connect(function(err) {
+    if (err) throw err;
+    con.query(sql, function(err, result, fields){
+      if (err) throw err;
+      resolve(result);
+    });
+  });
+}
+
 router.get('/',function(req, res, next){
   var con = get_connection();
+  var action = req.query.action;
+  if (!['all', 'closest'].includes(action)) res.json({});
+
   var promise = new Promise(function(resolve, reject){
-    query_all(con, req.query, res, resolve);
+    if (action == 'all') query_all(con, req.query, res, resolve);
+    else if (action == 'closest') query_closest_ip(con, req.query, res, resolve);
   });
   promise.then(function(ret){ 
     con.end();
