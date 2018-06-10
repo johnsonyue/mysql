@@ -19,6 +19,7 @@
     "neo4j-driver": "^1.6.1",
     "pug": "2.0.0-beta11",
     "radix-trie": "^1.0.8",
+    "request": "^2.87.0",
     "serve-favicon": "^2.5.0",
     "webpack": "^4.10.1",
     "webpack-cli": "^2.1.4"

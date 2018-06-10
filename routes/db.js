@@ -3,11 +3,14 @@ var router = express.Router();
 var mysql = require('mysql');
 var ip = require('ip');
 
+var config = require('../config');
+
 function get_connection(){
   return mysql.createConnection({
-    host: '10.10.222.135',
-    user: 'root',
-    password: '1q2w3e4r',
+    host: config.mysql.ip,
+    port: config.mysql.port,
+    user: config.mysql.user,
+    password: config.mysql.password,
     database: 'edges'
   });
 }
@@ -20,7 +23,7 @@ function query_all(con, query, res, resolve){
     return typeof v == 'string' ? k+"='"+v+"'" : k+"="+v;
   }
   var sql = 'SELECT * FROM edge_table ';
-  var where = Object.keys(query).filter(x => !['pageIndex', 'pageSize','sortField','sortOrder'].includes(x) && query[x]).map(wrap).join(' AND ');
+  var where = Object.keys(query).filter(x => !['action', 'pageIndex', 'pageSize','sortField','sortOrder'].includes(x) && query[x]).map(wrap).join(' AND ');
   if (where) sql += 'WHERE ' + where + ' ';
   if (query['sortField']) sql += 'ORDER BY ' + query['sortField'] + ' ' + query['sortOrder'] + ' ';
   sql += 'LIMIT ' + (query['pageIndex']-1)*query['pageSize'] + ',' + query['pageSize'];
@@ -44,8 +47,8 @@ function query_closest_ip(con, query, res, resolve){
   if (!query.ip || ip.isV4Format(query.ip)) resolve;
 
   var integer = ip.toLong(query.ip);
-  var a = '(SELECT * FROM node_table WHERE ip_int >= ' + integer + ' ORDER BY ip_int ASC LIMIT 1) ';
-  var b = '(SELECT * FROM node_table WHERE ip_int <= ' + integer + ' ORDER BY ip_int DESC LIMIT 1)';
+  var a = '(SELECT ip FROM node_table WHERE ip_int >= ' + integer + ' ORDER BY ip_int ASC LIMIT 1) ';
+  var b = '(SELECT ip FROM node_table WHERE ip_int <= ' + integer + ' ORDER BY ip_int DESC LIMIT 1) ';
   var sql = a + 'UNION ' + b;
   console.log(sql);
   con.connect(function(err) {

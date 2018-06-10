@@ -11,6 +11,8 @@ var neo4j = require('neo4j-driver').v1;
 var RadixTrie = require('radix-trie');
 var fs = require('fs');
 
+var config = require('../config');
+
 /**
 * Custom Module
 */
@@ -32,7 +34,7 @@ var server = http.createServer(app);
 /**
 * Stateful Variables.
 */
-driver = neo4j.driver("bolt://10.10.222.135:7689", neo4j.auth.basic("neo4j","1q2w3e4r"));
+driver = neo4j.driver("bolt://" + config.neo4j.ip + ":" + config.neo4j.port, neo4j.auth.basic(config.neo4j.user, config.neo4j.password));
 trie = new RadixTrie();
 
 if (process.env.GEO){

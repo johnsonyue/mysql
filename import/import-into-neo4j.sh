@@ -11,7 +11,7 @@ cat $links | awk '{print $1; print $2}' | sort -u | sed 's/$/,node/' >$database-
 }
 
 usage(){
-  echo "./import-links.sh <\$links> <\$databases>"
+  echo "./import-links.sh <\$links> <\$database>"
 }
 
 test $# -lt 2 && usage && exit
