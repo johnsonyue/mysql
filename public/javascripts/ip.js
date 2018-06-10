@@ -75,12 +75,15 @@ $(function() {
            type: "GET",
            url: "/graph",
            data: params,
+           beforeSend: function(){
+             $('#nav-tab a[href=#adj-list-tab]').tab('show');
+             $(container).find(".jsgrid-load-shader").show();
+           }
          }).done(result => {
            result.forEach( (x,i) => x['#']=i );
            adjTableData = result;
            $(container).jsGrid("option","data",adjTableData);
-
-           $('#nav-tab a[href=#adj-list-tab]').tab('show');
+           $(container).find(".jsgrid-load-shader").hide();
          });
        });
      return a;
@@ -104,15 +107,18 @@ $(function() {
            type: "GET",
            url: "/graph",
            data: params,
+           beforeSend: function(){
+             $('#nav-tab a[href=#topo-list-tab]').tab('show');
+             $(container).find(".jsgrid-load-shader").show();
+           }
          }).done(result => {
            result.forEach( (x,i) => x['#']=i );
            topoTableData = result;
            $(container).jsGrid("option","data",topoTableData);
-
-           $('#nav-tab a[href=#topo-list-tab]').tab('show');
            
            graph_data = format(topoTableData);
            graph = new mylib.myD3Graph($('#topo_vis_div'), graph_data, {});
+           $(container).find(".jsgrid-load-shader").hide();
          });
        });
      return a;
@@ -193,7 +199,7 @@ $(function() {
         });
         result.forEach( (x,i) => x['#']=i );
         return result;
-      }
+      },
     },
 
     fields: [
@@ -239,7 +245,7 @@ $(function() {
         });
         result.forEach( (x,i) => x['#']=i );
         return result;
-      }
+      },
     },
 
     fields: [

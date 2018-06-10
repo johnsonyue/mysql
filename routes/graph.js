@@ -2,6 +2,7 @@ var express = require('express');
 var request = require('request');
 var router = express.Router();
 var neo4j = require('neo4j-driver').v1;
+var ip = require('ip');
 var patricia = require('../src/patricia');
 
 function get_connection(){
@@ -73,7 +74,7 @@ function query_vic(session, query, res){
 router.get('/',function(req, res, next){
   var session = get_connection();
   if (req.query.action == 'ip'){
-    if (req.query.ip) {
+    if (req.query.ip && ip.isV4Format(req.query.ip)) {
       var url = req.protocol + '://' + req.get('host') + '/db?action=closest&ip=' + req.query.ip;
       console.log(url);
       request(
@@ -84,8 +85,10 @@ router.get('/',function(req, res, next){
           query_ip(session, req.query, res, ip_list);
         }
       );
-    }else{
+    }else if(!req.query.ip){
       query_ip(session, req.query, res, []);
+    }else{
+      res.json({'data':[], 'itemsCount': 0});
     }
   }else if (req.query.action == 'adj'){
     query_adj(session, req.query, res);
