@@ -32,7 +32,7 @@ create index monitor_index on edge_table(monitor);
 drop table if exists node_table;
 create table if not exists node_table(
   ip varchar(16),
-  ip_int integer,
+  ip_int integer unsigned,
   primary key (ip)
 ) engine MyISAM;
 
