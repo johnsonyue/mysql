@@ -257,7 +257,7 @@ $(function() {
       { name: "ip", type: "text", filtering: true, sorting: true, align: 'left' },
       { name: "country", type: "countryField", actionContainer: "#iface_table_div", filtering: true, sorting: true, align: 'center' },
       { name: "rtr_id", type: "text", filtering: false, sorting: false, align: 'center' },
-      { name: "degree", type: "text", filtering: true, sorting: true, align: 'center' }
+      { name: "degree", type: "number", filtering: true, sorting: true, align: 'center' }
      ]
   });
 
