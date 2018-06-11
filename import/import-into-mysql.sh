@@ -33,5 +33,5 @@ usage(){
 test $# -lt 1 && usage && exit
 links=$1
 
-#links2dsv $links
+links2dsv $links
 mysql -u root -p <bulk.sql

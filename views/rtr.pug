@@ -1,0 +1,43 @@
+extends template
+
+block content
+  div(class="col-md-12")
+    h2(class="sub-header") Router List
+    div(class="col-md-12" id="rtr_table_div")
+    div(class="col-md-12")
+      div(class="col-md-8" id="pager_div")
+      div(class="col-md-4 form-inline" style="padding-top: 8; padding-bottom: 8;")
+        label page size: &nbsp;&nbsp
+        select(id="size_select" class="form-control" value=20)
+          option(value=20) 20
+          option(value=40) 40
+          option(value=60) 60
+          option(value=100) 100
+        |&nbsp;&nbsp 
+        label go to page: &nbsp;&nbsp
+        input(id="page_input" class="form-control" type="number" min="1")
+
+  hr(class="col-xs-12")
+  ul(id="nav-tab" class="nav nav-tabs" role="tablist")
+    li(class="active" role="presentation")
+      a(href="#iface-list-tab" role="tab" data-toggle="tab") Interface List
+    li(role="presentation")
+      a(href="#adj-list-tab" role="tab" data-toggle="tab") Adjacency List
+    li(role="presentation")
+      a(href="#topo-list-tab" role="tab" data-toggle="tab") Topology List
+    li(role="presentation")
+      a(href="#topo-vis-tab" role="tab" data-toggle="tab") Topology Visualization
+
+  div(class="tab-content")
+    div(id="iface-list-tab" role="tabpanel" class="tab-pane fade in active")
+      h2(class="sub-header") Interface List
+      div(class="col-md-12" id="iface_table_div")
+    div(id="adj-list-tab" role="tabpanel" class="tab-pane fade in")
+      h2(class="sub-header") Adjacency List
+      div(class="col-md-12" id="adj_table_div")
+    div(id="topo-list-tab" role="tabpanel" class="tab-pane fade in")
+      h2(class="sub-header") Topology List
+      div(class="col-md-12" id="topo_table_div")
+    div(id="topo-vis-tab" role="tabpanel" class="tab-pane fade in")
+      h2(class="sub-header") Topology Visualization
+      div(class="col-md-12" id="topo_vis_div")
