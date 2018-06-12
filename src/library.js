@@ -6,7 +6,15 @@ export function myD3Graph(container, data, options){
   var height = typeof options.height !== "undefined" ? options.height : 1000;
   var min_node_radius = typeof options.min_node_radius !== "undefined" ? options.min_node_radius : 5;
   var max_node_radius = typeof options.max_node_radius !== "undefined" ? options.max_node_radius : 35;
-
+  var label_text_size = typeof options.label_text_size !== "undefined" ? options.label_text_size : '9px';
+  var min_link_distance = typeof options.min_link_distance !== "undefined" ? options.min_link_distance : 100;
+ 
+  var node_color = typeof options.node_color !== "undefined" ? options.node_color : "#3498db";
+  var link_color = typeof options.link_color !== "undefined" ? options.node_color : "#049141";
+  var node_color_hl = typeof options.node_color_hl !== "undefined" ? options.node_color_hl : "#ffaaff";
+  var node_color_super = typeof options.node_color_super !== "undefined" ? options.node_color_super : "#00cc66";
+  
+  var collapse_th = typeof options.collapse_th !== "undefined" ? options.collapse_th : 10;
 
   $(container).empty();
   $(container).append('<svg></svg>');
@@ -15,11 +23,15 @@ export function myD3Graph(container, data, options){
     .attr("height",height);
   var node_radius_scale = d3.scaleLinear().domain([0,data.nodes.length]).range([min_node_radius,max_node_radius]);
   var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) { return d.id; }))
+    .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(60))
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(width/2, height/2))
     .force("xAxis",d3.forceX(width/2))
     .force("yAxis",d3.forceY(height/2));
+  
+  var radius_scale = d3.scaleLinear()
+    .domain([0,data.nodes.length])
+    .range([min_node_radius, max_node_radius]);
   
   window.addEventListener("resize", resized);
 
@@ -30,6 +42,7 @@ export function myD3Graph(container, data, options){
   var link, node;
   
   update();
+  simplify();
   
   /*d3 selection in-depth explanation:
     selectAll() selects corespoding DOM, even if there's none.
@@ -50,27 +63,43 @@ export function myD3Graph(container, data, options){
       .data(data.links, function(d){return d.id;});
     link.enter()
       .append("line")
-      .style("stroke", function(d){return "#3498db";})
+      .style("stroke", function(d){return link_color;})
       .style("opacity", 0.7)
       .style("stroke-width", 1); //enter
     link.exit().remove();
-    //link.exit().style("stroke", "#ffaaff");
     
-    node = nodes.selectAll("circle")
-      .data(data.nodes, function(d){return d.id;});
-    node.enter()
-      .append("circle")
-        .attr("r", 5)
-        .attr("fill", "#3498db")
-        .attr("id", function(d){return d.id;})
+    node = nodes.selectAll(".node")
+       .data(data.nodes, function(d){return d.id;});
+    var update = node.enter()
+      .append("g")
+        .attr("class","node")
         .on("dbclick", dbclicked)
         .call(d3.drag()
           .on("start", dragstarted)
           .on("drag", dragged)
-          .on("end", dragended)) //enter
+          .on("end", dragended));
+    update.append("circle")
+      .attr("r", function(d){return radius_scale(0);})
+      .attr("fill", function(d){return d.hl ? node_color_hl : node_color})
+      .attr("id", function(d){return d.id;})
       .append("title")
         .text(function(d){return d.id;});
+    update.append("text")
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('dy', '.35em')
+      .attr('font-size', label_text_size)
+      .style('text-anchor', 'middle')
+      .style('user-select', 'none')
+      .style('cursor', 'default')
+      //.text(function(d){return d.label;});
+      .text(function(d){return d.id;});
     node.exit().remove();
+
+    //manually update the circle style.
+    node.selectAll("circle")
+      .attr("r", function(d){return radius_scale(d.sub ? d.sub.nodes.length : 0);})
+      .attr("fill", function(d){return d.hl ? node_color_hl : (d.sub ? node_color_super : node_color)});
 
     simulation
       .nodes(data.nodes)
@@ -87,9 +116,8 @@ export function myD3Graph(container, data, options){
       .attr("x2", function(d) { return d.target.x; })
       .attr("y2", function(d) { return d.target.y; });
 
-    nodes.selectAll("circle")
-      .attr("cx", function(d) { return d.x; })
-      .attr("cy", function(d) { return d.y; });
+    nodes.selectAll(".node")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
   }
 
   function resized(){
@@ -121,21 +149,107 @@ export function myD3Graph(container, data, options){
     d.fy = null;
   }
 
-  function collapse(){
-    return;
-  }
-  
-  function expand(){
-    return;
-  }
-  
   function dbclicked(){
     return;
+  }
+
+  function collapse(id_list, rep_id){
+    if (!id_list.includes(rep_id)) return;
+    //save sub graph induced by collapsing node set.
+    var rep_node = data.nodes.find(x => x.id == rep_id);
+    if (rep_node.sub) return;
+    rep_node.sub = {
+      "nodes": id_list.map( id => data.nodes.find(x => x.id == id) ),
+      "links": []
+    };
+    //delete every other node in the collapsing node set.
+    var dl = [];
+    id_list.filter( x => !(x==rep_id) ).forEach(function(d){
+      var i = data.nodes.findIndex(x => x.id==d);
+      if (i>=0) dl.push(i);
+    });
+    console.log(dl.map(i=>data.nodes.find(x=>x.id==i)));
+    dl.sort().reverse().forEach( i => data.nodes.splice(i,1) );
+    //backup related links. delete intra-links. update inter-links.
+    var rep_node = data.nodes.find(x => x.id == rep_id);
+    
+    var dl = [];
+    data.links.forEach(function(d){
+      if (!id_list.includes(d.source.id) && !id_list.includes(d.target.id)) return;
+
+      rep_node.sub.links.push(d);
+      if (id_list.includes(d.source.id) && id_list.includes(d.target.id)){
+        var i = data.links.findIndex(x => x.id==d.id);
+        if (i>=0) dl.push(i);
+      }else{
+        if (id_list.includes(d.source.id)){
+          d.source = rep_node;
+        }else{
+          d.target = rep_node;
+        }
+      }
+    });
+    dl.sort().reverse().forEach( i => data.links.splice(i,1) );
+    update();
+  }
+  
+  function expand(rep_id){
+    var sub = data.nodes.find(x => x.id == rep_id).sub;
+    if (!sub) return;
+    //add every others nodes from sub to graph.
+    sub.nodes.filter( x => !(x.id==rep_id)).forEach(function(d){
+      data.nodes.push(d);
+    });
+    //restore backed-up links. add intra links to graph. update inter-links.
+    var id_list = sub.nodes.map(x => x.id);
+    sub.links.forEach(function(d){
+      if (id_list.includes(d.source.id) && id_list.includes(d.target.id)){
+        data.links.push(d);
+      }else if (id_list.includes(d.source.id) || id_list.includes(d.target.id)){
+        if (id_list.includes(d.source.id)){
+          data.links.find(x => x.id == d.id).source = d.source;
+        }else{
+          data.links.find(x => x.id == d.id).target = d.target;
+        }
+      }
+    });
+    data.nodes.find(x => x.id == rep_id).sub = null;
+    update();
+  }
+  
+  //calculate degree as UAG.
+  function degree(){
+    data.links.forEach(function(d){
+      var source_node = data.nodes.find(x => x.id == d.source.id); source_node.degree = (source_node.degree || 0) + 1;
+      var target_node = data.nodes.find(x => x.id == d.target.id); target_node.degree = (target_node.degree || 0) + 1;
+    });
+  }
+
+  function adj_leaf(id){
+    var ll=[];
+    data.links.forEach(function(d){
+      if (d.source.id == id && data.nodes.find(x=> x.id == d.target.id).degree == 1) ll.push(d.target.id);
+      else if (d.target.id == id && data.nodes.find(x=> x.id == d.source.id).degree == 1) ll.push(d.source.id);
+    });
+    return ll;
+  }
+
+  function simplify(){
+    degree();
+    var collapse_list = [];
+    data.nodes.filter(x => x.degree > collapse_th).forEach(function(d){
+      var al = adj_leaf(d.id); al.push(d.id);
+      if (al.length > collapse_th) collapse_list.push(al);
+    });
+    console.log(collapse_list);
+    //collapse_list.forEach(al => collapse(al, al[al.length-1]))
   }
   
   return {
     "update": update,
-    "resized": resized
+    "resized": resized,
+    "collapse": collapse,
+    "expand": expand
   };
 
 }
