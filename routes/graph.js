@@ -87,13 +87,15 @@ function query_vic(session, query, res){
   });
 }
 
-function query_rtr(session, query, res){
+function query_rtr(session, query, res, ip_list){
   function wrap(k){
     var v = query[k];
     return typeof v == 'string' ? 'n.'+k+"='"+v+"'" : 'n.'+k+"="+v;
   }
   var cypher = 'MATCH (n:node) ';
-  var where = Object.keys(query).filter(x => !['action', 'pageIndex', 'pageSize','sortField','sortOrder'].includes(x) && query[x]).map(wrap).join(' AND ');
+  var ip_list = ip_list.map(x => '"'+x+'"').join(',');
+  if (ip_list) ip_list = 'n.ip IN [' + ip_list + ']';
+  var where = Object.keys(query).filter(x => !['action', 'ip', 'pageIndex', 'pageSize','sortField','sortOrder'].includes(x) && query[x]).map(wrap).concat([ip_list]).filter(x => x).join(' AND ');
   if (!where) where = 'n.is_end = "N" ';
   cypher += 'WHERE ' + where + ' ';
   cypher += 'WITH n '; //pipeline using 'WITH'
@@ -209,7 +211,20 @@ router.get('/',function(req, res, next){
   }else if (req.query.action == 'vic'){
     query_vic(session, req.query, res);
   }else if (req.query.action == 'rtr'){
-    query_rtr(session, req.query, res);
+    if (req.query.ip && ip.isV4Format(req.query.ip)) {
+      var url = req.protocol + '://' + req.get('host') + '/db?action=closest&ip=' + req.query.ip;
+      console.log(url);
+      request(
+        url, {'json': true},
+        (err, ret, body) => {
+          if (err) throw err;
+          var ip_list = body.map(x => x.ip);
+          query_rtr(session, req.query, res, ip_list);
+        }
+      );
+    }else if(!req.query.ip){
+      query_rtr(session, req.query, res, []);
+    }
   }else if (req.query.action == 'rtr_iface'){
     query_rtr_iface(session, req.query, res);
   }else if (req.query.action == 'rtr_adj'){

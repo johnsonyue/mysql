@@ -205,7 +205,7 @@ $(function() {
     },
     fields: [
       { name: "#", type: "text", filtering: false, sorting: false, align: 'center' },
-      { name: "ip", type: "text", filtering: false, sorting: false, align: 'left' },
+      { name: "ip", type: "text", filtering: true, sorting: false, align: 'left' },
       { name: "country", type: "countryField", actionContainer: "#rtr_table_div", filtering: false, sorting: false, align: 'center' },
       { name: "rtr_id", type: "clickableField", actionFunction: on_rtr_id_click, actionData: 'ifaceTableData', actionContainer: "#iface_table_div", actionTab: "#nav-tab a[href=#iface-list-tab]", searchContainer: '#rtr_table_div', autosearch: true, filtering: true, sorting: false, align: 'center' },
       { name: "degree", type: "clickableField", actionFunction: on_degree_click, actionData: 'adjTableData', actionContainer: "#adj_table_div", actionTab: "#nav-tab a[href=#adj-list-tab]", filtering: false, sorting: false, align: 'center' },
