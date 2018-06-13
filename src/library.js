@@ -92,14 +92,15 @@ export function myD3Graph(container, data, options){
       .style('text-anchor', 'middle')
       .style('user-select', 'none')
       .style('cursor', 'default')
-      //.text(function(d){return d.label;});
-      .text(function(d){return d.id;});
+      .text(function(d){return d.label;});
     node.exit().remove();
 
     //manually update the circle style.
     node.selectAll("circle")
       .attr("r", function(d){return radius_scale(d.sub ? d.sub.nodes.length : 0);})
       .attr("fill", function(d){return d.hl ? node_color_hl : (d.sub ? node_color_super : node_color)});
+    node.selectAll("text")
+      .attr("text", function(d){return d.label + (d.sub ? ' (' + d.sub.nodes.length + ')' : ''); });
 
     simulation
       .nodes(data.nodes)
