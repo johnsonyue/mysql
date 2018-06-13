@@ -168,8 +168,7 @@ export function myD3Graph(container, data, options){
       var i = data.nodes.findIndex(x => x.id==d);
       if (i>=0) dl.push(i);
     });
-    console.log(dl.map(i=>data.nodes.find(x=>x.id==i)));
-    dl.sort().reverse().forEach( i => data.nodes.splice(i,1) );
+    dl.sort((a,b) => a-b).reverse().forEach( i => data.nodes.splice(i,1) );
     //backup related links. delete intra-links. update inter-links.
     var rep_node = data.nodes.find(x => x.id == rep_id);
     
@@ -189,7 +188,7 @@ export function myD3Graph(container, data, options){
         }
       }
     });
-    dl.sort().reverse().forEach( i => data.links.splice(i,1) );
+    dl.sort((a,b) => a-b).reverse().forEach( i => data.links.splice(i,1) );
     update();
   }
   
@@ -241,8 +240,7 @@ export function myD3Graph(container, data, options){
       var al = adj_leaf(d.id); al.push(d.id);
       if (al.length > collapse_th) collapse_list.push(al);
     });
-    console.log(collapse_list);
-    //collapse_list.forEach(al => collapse(al, al[al.length-1]))
+    collapse_list.forEach(al => collapse(al, al[al.length-1]))
   }
   
   return {
