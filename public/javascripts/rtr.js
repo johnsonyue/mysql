@@ -155,6 +155,7 @@ $(function() {
       $(container).jsGrid("option","data",dataObj[data]);
       
       graph_data = format(dataObj[data]);
+      graph_data.nodes.find(x => x.label == items.ip).hl = true;
       graph = new mylib.myD3Graph($('#topo_vis_div'), graph_data, {});
       $(container).find(".jsgrid-load-shader").hide();
     });

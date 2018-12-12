@@ -17,6 +17,8 @@ export function myD3Graph(container, data, options){
   var collapse_th = typeof options.collapse_th !== "undefined" ? options.collapse_th : 10;
 
   $(container).empty();
+  $(container).attr("tabindex", 0);
+  $(container).css("outline", 'none');
   $(container).append('<svg></svg>');
   var svg = d3.select($(container).find('svg').get(0))
     .attr("width",width)
@@ -43,6 +45,15 @@ export function myD3Graph(container, data, options){
   
   update();
   simplify();
+
+  var shift_key_down = false;
+  $(container)
+    .on("keydown",function(e){
+      if (!shift_key_down && e.keyCode == 16) shift_key_down = true;
+    })
+    .on("keyup",function(e){
+      if (e.keyCode == 16) shift_key_down = false;
+    });
   
   /*d3 selection in-depth explanation:
     selectAll() selects corespoding DOM, even if there's none.
@@ -73,7 +84,7 @@ export function myD3Graph(container, data, options){
     var update = node.enter()
       .append("g")
         .attr("class","node")
-        .on("dbclick", dbclicked)
+        .on("dblclick", dblclicked)
         .call(d3.drag()
           .on("start", dragstarted)
           .on("drag", dragged)
@@ -100,7 +111,7 @@ export function myD3Graph(container, data, options){
       .attr("r", function(d){return radius_scale(d.sub ? d.sub.nodes.length : 0);})
       .attr("fill", function(d){return d.hl ? node_color_hl : (d.sub ? node_color_super : node_color)});
     node.selectAll("text")
-      .attr("text", function(d){return d.label + (d.sub ? ' (' + d.sub.nodes.length + ')' : ''); });
+      .text(function(d){return d.label + (d.sub ? ' (' + d.sub.nodes.length + ')' : '');});
 
     simulation
       .nodes(data.nodes)
@@ -137,6 +148,12 @@ export function myD3Graph(container, data, options){
     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
     d.fx = d.x;
     d.fy = d.y;
+
+    if (shift_key_down) {
+      d.fixed = !(d.fixed || false);
+      if (d.fixed) $(this).find('circle').css({'stroke':'#000', 'stroke-width': '2.5px'});
+      else $(this).find('circle').css({'stroke':'none'});
+    }
   }
   
   function dragged(d) {
@@ -146,14 +163,26 @@ export function myD3Graph(container, data, options){
   
   function dragended(d) {
     if (!d3.event.active) simulation.alphaTarget(0);
+    
+    if (shift_key_down) {
+      d.fixed = true;
+      $(this).find('circle').css({'stroke':'#000', 'stroke-width': '2.5px'});
+    }
+    if (d.fixed) return;
     d.fx = null;
     d.fy = null;
   }
-
-  function dbclicked(){
+  
+  function dblclicked(d){
+    if (d.sub) {
+      expand(d.id);
+    }else{
+      var al = adj_leaf(d.id); al.push(d.id);
+      collapse(al, d.id);
+    }
     return;
   }
-
+  
   function collapse(id_list, rep_id){
     if (!id_list.includes(rep_id)) return;
     //save sub graph induced by collapsing node set.
